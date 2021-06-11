@@ -32,8 +32,10 @@ import tv.danmaku.ijk.media.example.application.AppActivity;
 import tv.danmaku.ijk.media.example.application.Settings;
 import tv.danmaku.ijk.media.example.eventbus.FileExplorerEvents;
 import tv.danmaku.ijk.media.example.fragments.FileListFragment;
+import android.util.Log;
 
 public class FileExplorerActivity extends AppActivity {
+    private final String TAG = "FileExplorerActivity";
     private Settings mSettings;
 
     @Override
@@ -45,10 +47,12 @@ public class FileExplorerActivity extends AppActivity {
         }
 
         String lastDirectory = mSettings.getLastDirectory();
+        if (lastDirectory.equals("/"))
+            lastDirectory = "/sdcard";
         if (!TextUtils.isEmpty(lastDirectory) && new File(lastDirectory).isDirectory())
             doOpenDirectory(lastDirectory, false);
         else
-            doOpenDirectory("/", false);
+            doOpenDirectory("/sdcard", false);
     }
 
     @Override
@@ -93,6 +97,7 @@ public class FileExplorerActivity extends AppActivity {
             mSettings.setLastDirectory(path);
             doOpenDirectory(path, true);
         } else if (f.exists()) {
+            Log.e(TAG, "ijkStudy onClickFile fileName = " + f.getName());
             VideoActivity.intentTo(this, f.getPath(), f.getName());
         }
     }
