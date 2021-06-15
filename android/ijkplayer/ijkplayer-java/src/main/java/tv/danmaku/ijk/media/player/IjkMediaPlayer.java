@@ -244,6 +244,7 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
          * Native setup requires a weak reference to our object. It's easier to
          * create it here than in C++.
          */
+        Log.e(TAG, "ijkStudy ijkMediaPlayer selected, entering C++ ...");
         native_setup(new WeakReference<IjkMediaPlayer>(this));
     }
 

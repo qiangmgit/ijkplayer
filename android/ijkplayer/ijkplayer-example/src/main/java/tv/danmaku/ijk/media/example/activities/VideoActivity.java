@@ -134,6 +134,7 @@ public class VideoActivity extends AppCompatActivity implements TracksFragment.I
         mDrawerLayout.setScrimColor(Color.TRANSPARENT);
 
         // init player
+        Log.e(TAG, "ijkStudy IjkMediaPlayer init ");
         IjkMediaPlayer.loadLibrariesOnce(null);
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
 

@@ -285,6 +285,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         mUri = uri;
         mHeaders = headers;
         mSeekWhenPrepared = 0;
+        Log.e(TAG, "ijkStudy setVideoURI " + uri);
         openVideo();
         requestLayout();
         invalidate();
@@ -321,6 +322,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
         try {
+            Log.e(TAG, "ijkStudy mSettings.getPlayer() = " + mSettings.getPlayer());
             mMediaPlayer = createPlayer(mSettings.getPlayer());
 
             // TODO: create SubtitleController in MediaPlayer, but we need
