@@ -950,6 +950,7 @@ static int feed_input_buffer(JNIEnv *env, IJKFF_Pipenode *node, int64_t timeUs, 
 
         queue_flags = 0;
         input_buffer_index = SDL_AMediaCodec_dequeueInputBuffer(opaque->acodec, timeUs);
+        ALOGD("ijkStudy MediaCodec dequeueInputBuffer, input_buffer_index = %d", input_buffer_index);
         if (input_buffer_index < 0) {
             if (SDL_AMediaCodec_isInputBuffersValid(opaque->acodec)) {
                 // timeout
@@ -962,7 +963,7 @@ static int feed_input_buffer(JNIEnv *env, IJKFF_Pipenode *node, int64_t timeUs, 
             }
         } else {
             SDL_AMediaCodecFake_flushFakeFrames(opaque->acodec);
-
+            ALOGD("ijkStudy MediaCodec writeInputData, input_buffer_index = %d", input_buffer_index);
             copy_size = SDL_AMediaCodec_writeInputData(opaque->acodec, input_buffer_index, d->pkt_temp.data, d->pkt_temp.size);
             if (!copy_size) {
                 ALOGE("%s: SDL_AMediaCodec_getInputBuffer failed\n", __func__);
@@ -980,6 +981,7 @@ static int feed_input_buffer(JNIEnv *env, IJKFF_Pipenode *node, int64_t timeUs, 
             time_stamp = 0;
         }
         // ALOGE("queueInputBuffer, %lld\n", time_stamp);
+        ALOGD("ijkStudy MediaCodec queueInputBuffer, input_buffer_index = %d", input_buffer_index);
         amc_ret = SDL_AMediaCodec_queueInputBuffer(opaque->acodec, input_buffer_index, 0, copy_size, time_stamp, queue_flags);
         if (amc_ret != SDL_AMEDIA_OK) {
             ALOGE("%s: SDL_AMediaCodec_getInputBuffer failed\n", __func__);
@@ -1033,6 +1035,8 @@ static int enqueue_thread_func(void *arg)
     }
 
     while (!q->abort_request && !opaque->abort) {
+        static int feed_count = 0;
+        ALOGD("ijkStudy feed_input_buffer called, feed_count = %d", feed_count++);
         ret = feed_input_buffer(env, node, AMC_INPUT_TIMEOUT_US, &dequeue_count);
         if (ret != 0) {
             goto fail;
@@ -1599,6 +1603,7 @@ static int func_run_sync(IJKFF_Pipenode *node)
     while (!q->abort_request) {
         int64_t timeUs = opaque->acodec_first_dequeue_output_request ? 0 : AMC_OUTPUT_TIMEOUT_US;
         got_frame = 0;
+
         ret = drain_output_buffer(env, node, timeUs, &dequeue_count, frame, &got_frame);
         if (opaque->acodec_first_dequeue_output_request) {
             SDL_LockMutex(opaque->acodec_first_dequeue_output_mutex);
@@ -1613,6 +1618,8 @@ static int func_run_sync(IJKFF_Pipenode *node)
             goto fail;
         }
         if (got_frame) {
+            static int got_frame_count = 0;
+            ALOGD("ijkStudy drain_output_buffer got_frame_count = %d", got_frame_count++);
             duration = (frame_rate.num && frame_rate.den ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0);
             pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
             if (ffp->framedrop > 0 || (ffp->framedrop && ffp_get_master_sync_type(is) != AV_SYNC_VIDEO_MASTER)) {
@@ -1632,6 +1639,7 @@ static int func_run_sync(IJKFF_Pipenode *node)
                             ffp->stat.drop_frame_count++;
                             ffp->stat.drop_frame_rate = (float)(ffp->stat.drop_frame_count) / (float)(ffp->stat.decode_frame_count);
                             if (frame->opaque) {
+                                ALOGD("ijkStudy SDL_VoutAndroid_releaseBufferProxyP called case 0");
                                 SDL_VoutAndroid_releaseBufferProxyP(opaque->weak_vout, (SDL_AMediaCodecBufferProxy **)&frame->opaque, false);
                             }
                             av_frame_unref(frame);
@@ -1643,6 +1651,7 @@ static int func_run_sync(IJKFF_Pipenode *node)
             ret = ffp_queue_picture(ffp, frame, pts, duration, av_frame_get_pkt_pos(frame), is->viddec.pkt_serial);
             if (ret) {
                 if (frame->opaque)
+                    ALOGD("ijkStudy SDL_VoutAndroid_releaseBufferProxyP called case 1");
                     SDL_VoutAndroid_releaseBufferProxyP(opaque->weak_vout, (SDL_AMediaCodecBufferProxy **)&frame->opaque, false);
             }
             av_frame_unref(frame);
@@ -1903,7 +1912,7 @@ fail:
 
 IJKFF_Pipenode *ffpipenode_create_video_decoder_from_android_mediacodec(FFPlayer *ffp, IJKFF_Pipeline *pipeline, SDL_Vout *vout)
 {
-    ALOGD("ffpipenode_create_video_decoder_from_android_mediacodec()\n");
+    ALOGD("ijkStudy ffpipenode_create_video_decoder_from_android_mediacodec()\n");
     if (SDL_Android_GetApiLevel() < IJK_API_16_JELLY_BEAN)
         return NULL;
 
@@ -2060,12 +2069,14 @@ IJKFF_Pipenode *ffpipenode_create_video_decoder_from_android_mediacodec(FFPlayer
     }
 
     jsurface = ffpipeline_get_surface_as_global_ref(env, pipeline);
+    ALOGD("ijkStudy reconfigure_codec_l called");
     ret = reconfigure_codec_l(env, node, jsurface);
     J4A_DeleteGlobalRef__p(env, &jsurface);
     if (ret != 0)
         goto fail;
 
     ffp_set_video_codec_info(ffp, MEDIACODEC_MODULE_NAME, opaque->mcc.codec_name);
+    ALOGD("ijkStudy codec_name = %s", opaque->mcc.codec_name);
 
     opaque->off_buf_out = 0;
     if (opaque->n_buf_out) {

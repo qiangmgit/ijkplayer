@@ -860,6 +860,7 @@ fail:
 
 static bool mediacodec_select_callback(void *opaque, ijkmp_mediacodecinfo_context *mcc)
 {
+    ALOGD("ijkStudy mediacodec_select_callback invoked");
     JNIEnv *env = NULL;
     jobject weak_this = (jobject) opaque;
     const char *found_codec_name = NULL;
@@ -1197,7 +1198,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
     // FindClass returns LocalReference
     IJK_FIND_JAVA_CLASS(env, g_clazz.clazz, JNI_CLASS_IJKPLAYER);
     (*env)->RegisterNatives(env, g_clazz.clazz, g_methods, NELEM(g_methods) );
-
+    ALOGD("ijkStudy ijkmp_global_init called");
     ijkmp_global_init();
     ijkmp_global_set_inject_callback(inject_callback);
 

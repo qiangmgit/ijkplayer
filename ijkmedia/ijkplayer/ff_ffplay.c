@@ -871,6 +871,7 @@ static size_t parse_ass_subtitle(const char *ass, char *output)
 
 static void video_image_display2(FFPlayer *ffp)
 {
+    ALOGD("ijkStudy video_image_display2 called");
     VideoState *is = ffp->is;
     Frame *vp;
     Frame *sp = NULL;
@@ -1317,6 +1318,7 @@ static void video_refresh(FFPlayer *opaque, double *remaining_time)
     if (!ffp->display_disable && is->show_mode != SHOW_MODE_VIDEO && is->audio_st) {
         time = av_gettime_relative() / 1000000.0;
         if (is->force_refresh || is->last_vis_time + ffp->rdftspeed < time) {
+            ALOGD("ijkStudy video_display2 called case 1");
             video_display2(ffp);
             is->last_vis_time = time;
         }
@@ -1413,7 +1415,10 @@ retry:
 display:
         /* display picture */
         if (!ffp->display_disable && is->force_refresh && is->show_mode == SHOW_MODE_VIDEO && is->pictq.rindex_shown)
+        {
+            ALOGD("ijkStudy video_display2 called case 2");
             video_display2(ffp);
+        }
     }
     is->force_refresh = 0;
     if (ffp->show_status) {
@@ -2164,6 +2169,7 @@ static int audio_thread(void *arg)
 static int decoder_start(Decoder *d, int (*fn)(void *), void *arg, const char *name)
 {
     packet_queue_start(d->queue);
+    ALOGD("ijkStudy decoder_start, name = %s", name);
     d->decoder_tid = SDL_CreateThreadEx(&d->_decoder_tid, fn, arg, name);
     if (!d->decoder_tid) {
         av_log(NULL, AV_LOG_ERROR, "SDL_CreateThread(): %s\n", SDL_GetError());
@@ -2962,6 +2968,7 @@ static int stream_component_open(FFPlayer *ffp, int stream_index)
             }
         } else {
             decoder_init(&is->viddec, avctx, &is->videoq, is->continue_read_thread);
+            ALOGD("ijkStudy open_video_decoder");
             ffp->node_vdec = ffpipeline_open_video_decoder(ffp->pipeline, ffp);
             if (!ffp->node_vdec)
                 goto fail;
@@ -3282,6 +3289,7 @@ static int read_thread(void *arg)
 
     ret = -1;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
+        ALOGD("ijkStudy stream_component_open called in read_thread");
         ret = stream_component_open(ffp, st_index[AVMEDIA_TYPE_VIDEO]);
     }
     if (is->show_mode == SHOW_MODE_NONE)
@@ -3705,7 +3713,7 @@ static VideoState *stream_open(FFPlayer *ffp, const char *filename, AVInputForma
     is->accurate_seek_mutex = SDL_CreateMutex();
     ffp->is = is;
     is->pause_req = !ffp->start_on_prepared;
-
+    ALOGD("ijkStudy video_refresh_thread created");
     is->video_refresh_tid = SDL_CreateThreadEx(&is->_video_refresh_tid, video_refresh_thread, ffp, "ff_vout");
     if (!is->video_refresh_tid) {
         av_freep(&ffp->is);
@@ -3713,6 +3721,7 @@ static VideoState *stream_open(FFPlayer *ffp, const char *filename, AVInputForma
     }
 
     is->initialized_decoder = 0;
+    ALOGD("ijkStudy read_thread created");
     is->read_tid = SDL_CreateThreadEx(&is->_read_tid, read_thread, ffp, "ff_read");
     if (!is->read_tid) {
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateThread(): %s\n", SDL_GetError());
@@ -3768,7 +3777,10 @@ static int video_refresh_thread(void *arg)
             av_usleep((int)(int64_t)(remaining_time * 1000000.0));
         remaining_time = REFRESH_RATE;
         if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh))
+        {
+            ALOGD("ijkStudy video_refresh called");
             video_refresh(ffp, &remaining_time);
+        }
     }
 
     return 0;
@@ -3870,7 +3882,7 @@ void ffp_global_init()
     if (g_ffmpeg_global_inited)
         return;
 
-    ALOGD("ijkmediaplayer version : %s", ijkmp_version());
+    ALOGD("ijkStudy ijkmediaplayer version : %s", ijkmp_version());
     /* register all codecs, demux and protocols */
     avcodec_register_all();
 #if CONFIG_AVDEVICE
@@ -4308,7 +4320,7 @@ int ffp_prepare_async_l(FFPlayer *ffp, const char *file_name)
         ffp->vfilters_list[ffp->nb_vfilters - 1] = ffp->vfilter0;
     }
 #endif
-
+    ALOGD("ijkStudy stream_open");
     VideoState *is = stream_open(ffp, file_name, NULL);
     if (!is) {
         av_log(NULL, AV_LOG_WARNING, "ffp_prepare_async_l: stream_open failed OOM");

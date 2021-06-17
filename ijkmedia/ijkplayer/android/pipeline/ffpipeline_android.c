@@ -133,7 +133,7 @@ inline static bool check_ffpipeline(IJKFF_Pipeline* pipeline, const char *func_n
 
 IJKFF_Pipeline *ffpipeline_create_from_android(FFPlayer *ffp)
 {
-    ALOGD("ffpipeline_create_from_android()\n");
+    ALOGD("ijkStudy ffpipeline_create_from_android()\n");
     IJKFF_Pipeline *pipeline = ffpipeline_alloc(&g_pipeline_class, sizeof(IJKFF_Pipeline_Opaque));
     if (!pipeline)
         return pipeline;

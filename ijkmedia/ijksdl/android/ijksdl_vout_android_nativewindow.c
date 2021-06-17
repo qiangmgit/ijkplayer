@@ -140,7 +140,8 @@ static void func_free_l(SDL_Vout *vout)
 }
 
 static int func_display_overlay_l(SDL_Vout *vout, SDL_VoutOverlay *overlay)
-{
+{ 
+    ALOGD("ijkStudy func_display_overlay_l called");
     SDL_Vout_Opaque *opaque = vout->opaque;
     ANativeWindow *native_window = opaque->native_window;
 
@@ -393,7 +394,7 @@ static int SDL_VoutAndroid_releaseBufferProxy_l(SDL_Vout *vout, SDL_AMediaCodecB
         proxy->buffer_index = -1;
         return 0;
     }
-
+    ALOGD("ijkStudy SDL_AMediaCodec_releaseOutputBuffer called");
     sdl_amedia_status_t amc_ret = SDL_AMediaCodec_releaseOutputBuffer(opaque->acodec, proxy->buffer_index, render);    
     if (amc_ret != SDL_AMEDIA_OK) {
         ALOGW("%s: [%d] !!!!!!!! proxy %d: vout: %d idx: %d render: %s, fake: %s",

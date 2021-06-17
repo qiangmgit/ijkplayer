@@ -114,6 +114,7 @@ static int func_fill_frame(SDL_VoutOverlay *overlay, const AVFrame *frame)
         return -1;
 
     if (opaque->buffer_proxy)
+        ALOGD("ijkStudy SDL_VoutAndroid_releaseBufferProxyP called case 3");
         SDL_VoutAndroid_releaseBufferProxyP(opaque->vout, (SDL_AMediaCodecBufferProxy **)&opaque->buffer_proxy, false);
 
     opaque->acodec       = SDL_VoutAndroid_peekAMediaCodec(opaque->vout);
@@ -187,5 +188,6 @@ int  SDL_VoutOverlayAMediaCodec_releaseFrame_l(SDL_VoutOverlay *overlay, SDL_AMe
         return -1;
 
     SDL_VoutOverlay_Opaque *opaque = overlay->opaque;
+    ALOGD("ijkStudy SDL_VoutAndroid_releaseBufferProxyP called case 4");
     return SDL_VoutAndroid_releaseBufferProxyP_l(opaque->vout, &opaque->buffer_proxy, render);
 }
